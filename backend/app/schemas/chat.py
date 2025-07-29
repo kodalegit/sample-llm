@@ -5,7 +5,7 @@ from datetime import datetime
 
 class MessageCreate(BaseModel):
     content: str = Field(..., min_length=1)
-    role: str = Field(..., regex="^(user|assistant)$")
+    role: str = Field(..., pattern="^(user|assistant)$")
 
 
 class MessageRead(BaseModel):
@@ -15,7 +15,7 @@ class MessageRead(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ChatCreate(BaseModel):
@@ -30,4 +30,4 @@ class ChatRead(BaseModel):
     messages: List[MessageRead] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
