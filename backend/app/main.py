@@ -6,8 +6,7 @@ import logging
 from app.api.v1 import auth, users, chats
 from app.config import settings
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
+# Use Uvicorn's built-in logging configuration
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app
