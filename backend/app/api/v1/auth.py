@@ -57,7 +57,7 @@ async def login(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestF
         )
     
     # Create access token
-    access_token_expires = timedelta(minutes=30)  # 30 minutes token validity
+    access_token_expires = timedelta(hours=24)  # 24 hours token validity
     access_token = create_access_token(user.id, expires_delta=access_token_expires)
     
     return {"access_token": access_token, "token_type": "bearer"}
