@@ -13,7 +13,7 @@ load_dotenv()
 class Settings(BaseSettings):
     # API settings
     API_V1_STR: str = "/api/v1"
-    PROJECT_NAME: str = "Travel Document Query API"
+    PROJECT_NAME: str = "Elelem"
 
     # Database settings
     DATABASE_URL: Optional[PostgresDsn]
@@ -26,9 +26,9 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
 
     # LLM settings
-    LLM_PROVIDER: str = "openai"  # openai, deepseek, gemini, or claude
+    LLM_PROVIDER: str = "gemini"  # openai, deepseek, gemini, or claude
     LLM_API_KEY: Optional[str]
-    LLM_MODEL: str = "gpt-3.5-turbo"  # Default to OpenAI's model
+    LLM_MODEL: str = "gemini-2.0-flash"
 
     class Config:
         env_file = str(Path(__file__).parent.parent / ".env")

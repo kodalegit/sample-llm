@@ -1,6 +1,9 @@
+import json
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from typing import Any, List
+from typing import Any, List, AsyncGenerator
 from app.api.deps import get_db, get_current_user
 from app.core.llm_service import llm_service
 from app.models.chat import Chat, Message
@@ -8,6 +11,7 @@ from app.schemas.chat import ChatCreate, ChatRead, MessageCreate, MessageRead
 from app.models.user import User
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=ChatRead, status_code=status.HTTP_201_CREATED)
@@ -33,7 +37,6 @@ async def create_chat(
 
 @router.post(
     "/{chat_id}/messages",
-    response_model=MessageRead,
     status_code=status.HTTP_201_CREATED,
 )
 async def add_message(
@@ -49,25 +52,58 @@ async def add_message(
     )
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
-    # Generate assistant response using LLM if role is user
-    if message_in.role == "user":
-        # Save user message
-        user_message = Message(chat_id=chat_id, role="user", content=message_in.content)
-        db.add(user_message)
-        db.commit()
-        db.refresh(user_message)
-        # Generate assistant reply
-        assistant_content = await llm_service.generate_response(message_in.content)
-        assistant_message = Message(
-            chat_id=chat_id, role="assistant", content=assistant_content
-        )
-        db.add(assistant_message)
-        db.commit()
-        db.refresh(assistant_message)
-        return assistant_message
-    else:
-        # Only allow user messages to trigger LLM
+    
+    # Only allow user messages to trigger LLM
+    if message_in.role != "user":
         raise HTTPException(status_code=400, detail="Only user messages are accepted.")
+    
+    # Save user message
+    user_message = Message(chat_id=chat_id, role="user", content=message_in.content)
+    db.add(user_message)
+    db.commit()
+    db.refresh(user_message)
+    
+    async def stream_response() -> AsyncGenerator[str, None]:
+        try:
+            # Stream assistant reply
+            assistant_content = ""
+            async for chunk in llm_service.generate_response_stream(message_in.content):
+                assistant_content += chunk
+                response_chunk = {
+                    "type": "token",
+                    "content": chunk,
+                    "id": f"streaming-{user_message.id}",
+                }
+                yield json.dumps(response_chunk) + "\n"
+            
+            # Save the complete assistant message
+            assistant_message = Message(
+                chat_id=chat_id, role="assistant", content=assistant_content
+            )
+            db.add(assistant_message)
+            db.commit()
+            db.refresh(assistant_message)
+            
+            # Send completion signal
+            completion_chunk = {
+                "type": "complete",
+                "id": assistant_message.id,
+            }
+            yield json.dumps(completion_chunk) + "\n"
+            
+        except Exception as e:
+            logger.error(f"Error generating response: {str(e)}")
+            error_chunk = {
+                "type": "error",
+                "content": "Sorry, something went wrong. Please try again later.",
+                "id": f"error-{user_message.id}",
+            }
+            yield json.dumps(error_chunk) + "\n"
+    
+    return StreamingResponse(
+        stream_response(),
+        media_type="application/json",
+    )
 
 
 @router.get("/", response_model=List[ChatRead])
