@@ -151,3 +151,18 @@ export async function sendMessageStream(
 
   return null;
 }
+
+export async function deleteChat(chatId: string, token: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/chats/${chatId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to delete chat');
+  }
+}

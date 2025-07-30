@@ -10,6 +10,7 @@ import {
   createChat,
   sendMessage,
   sendMessageStream,
+  deleteChat,
 } from "./api";
 import { useAuth } from "./authContext";
 
@@ -258,4 +259,38 @@ export function usePrefetchChat() {
       staleTime: CACHE_TIME.CHAT,
     });
   };
+}
+
+export function useDeleteChat() {
+  const queryClient = useQueryClient();
+  const { token } = useAuth();
+  
+  return useMutation({
+    mutationFn: (chatId: string) => {
+      if (!token) throw new Error('Not authenticated');
+      return deleteChat(chatId, token);
+    },
+    onMutate: async (chatId) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: ['chats'] });
+      
+      // Snapshot the previous value
+      const previousChats = queryClient.getQueryData(['chats']);
+      
+      // Optimistically remove the chat
+      queryClient.setQueryData(['chats'], (old: any) => 
+        old?.filter((chat: any) => chat.id !== chatId)
+      );
+      
+      return { previousChats };
+    },
+    onError: (err, chatId, context) => {
+      // Rollback to previous chats on error
+      queryClient.setQueryData(['chats'], context?.previousChats);
+    },
+    onSettled: () => {
+      // Invalidate to confirm deletion
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    },
+  });
 }
