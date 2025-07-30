@@ -134,3 +134,23 @@ async def get_chat(
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     return chat
+
+
+@router.delete("/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_chat(
+    chat_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    chat = (
+        db.query(Chat)
+        .filter(Chat.id == chat_id, Chat.user_id == current_user.id)
+        .first()
+    )
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    
+    # Delete all messages first to maintain referential integrity
+    db.query(Message).filter(Message.chat_id == chat_id).delete()
+    db.delete(chat)
+    db.commit()
