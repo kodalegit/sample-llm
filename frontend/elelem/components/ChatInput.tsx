@@ -1,72 +1,95 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Send, Mic } from "lucide-react";
+"use client";
 
-export interface ChatInputProps {
-  value: string;
-  onChange: (v: string) => void;
-  onSend: () => void;
-  loading?: boolean;
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Square, Send } from "lucide-react";
+
+interface ChatInputProps {
+  onSend: (content: string) => void;
+  onStop?: () => void;
+  isLoading?: boolean;
+  isStreaming?: boolean;
+  placeholder?: string;
+  className?: string;
+  inputValue?: string;
+  setInputValue?: (value: string) => void;
 }
 
 export default function ChatInput({
-  value,
-  onChange,
   onSend,
-  loading,
+  onStop,
+  isLoading = false,
+  isStreaming = false,
+  placeholder = "Type your message...",
+  className,
+  inputValue,
+  setInputValue,
 }: ChatInputProps) {
-  const [input, setInput] = useState(value);
+  const isControlled = typeof inputValue === 'string' && typeof setInputValue === 'function';
+  const [uncontrolledInput, setUncontrolledInput] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Keep input in sync with parent
-  // (for controlled input, but allow local typing)
-  // This is optional, you can just use value/onChange directly if preferred
-  // useEffect(() => setInput(value), [value])
+  const input = isControlled ? inputValue! : uncontrolledInput;
+  const setInput = isControlled ? setInputValue! : setUncontrolledInput;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-    onChange(e.target.value);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    onSend(input);
+    setInput("");
   };
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
-    onSend();
-    setInput("");
-    onChange("");
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey && !isLoading) {
+      e.preventDefault();
+      if (input.trim()) {
+        onSend(input);
+        setInput("");
+      }
+    }
   };
 
   return (
-    <form
-      onSubmit={handleSend}
-      className="relative flex items-center gap-2 p-4 border-t border-slate-700/50 bg-slate-800/30"
-    >
-      <Input
-        value={input}
-        onChange={handleInputChange}
-        placeholder="Type your message..."
-        disabled={loading}
-        className="flex-1 bg-slate-800/50 border-slate-600/50 text-white placeholder-slate-400 py-3 rounded-xl"
-      />
-      <Button
-        type="submit"
-        disabled={!input.trim() || loading}
-        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white h-10 w-10 rounded-xl p-0 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? (
-          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        ) : (
-          <Send className="h-5 w-5" />
-        )}
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="text-slate-400 hover:text-white hover:bg-slate-700/50 h-10 w-10 rounded-xl"
-      >
-        <Mic className="h-5 w-5" />
-      </Button>
+    <form onSubmit={handleSubmit} className={`w-full ${className}`}>
+      <div className="relative w-full flex flex-col bg-muted/90 border border-border rounded-2xl overflow-hidden">
+        <Textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="w-full min-h-[60px] placeholder:text-sm placeholder:md:text-md max-h-[200px] bg-transparent border-none resize-none pr-4 py-4 pl-4 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none text-foreground placeholder:text-muted-foreground"
+          disabled={isLoading}
+          rows={1}
+          aria-label="Chat message input"
+        />
+        <div className="flex items-center justify-end px-3 py-2 bg-muted/20">
+          {isLoading || isStreaming ? (
+            <Button
+              type="button"
+              size="icon"
+              onClick={onStop}
+              className="h-8 w-8 rounded-full bg-foreground text-background"
+              aria-label="Stop generating"
+              disabled={!onStop}
+            >
+              <Square className="h-4 w-4" strokeWidth={0} fill="currentColor" />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              size="icon"
+              variant="ghost"
+              disabled={!input.trim()}
+              className="h-8 w-8 rounded-full text-foreground bg-primary/20 hover:text-primary hover:bg-primary/30 transition-all duration-200"
+              aria-label="Send message"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
     </form>
   );
 }
