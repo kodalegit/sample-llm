@@ -41,7 +41,6 @@ const ChatContext = createContext<{
   state: ChatState;
   dispatch: React.Dispatch<ChatAction>;
   sendMessage: (content: string) => Promise<void>;
-  stopMessage: () => void;
   createNewConversation: (initialQuery: string) => Promise<any>;
 } | null>(null);
 
@@ -291,15 +290,6 @@ export function ChatProvider({
     };
   })();
 
-  const stopMessage = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      dispatch({ type: "SET_STREAMING", payload: false });
-      dispatch({ type: "SET_LOADING", payload: false });
-      abortControllerRef.current = null;
-    }
-  };
-
   const sendMessage = async (content: string) => {
     if (!content.trim() || state.isLoading || !token) return;
 
@@ -413,7 +403,6 @@ export function ChatProvider({
         state,
         dispatch,
         sendMessage,
-        stopMessage,
         createNewConversation,
       }}
     >

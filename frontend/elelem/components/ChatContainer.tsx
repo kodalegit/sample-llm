@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useChat } from "@/contexts/chat-context";
 import ChatMessages from "@/components/ChatMessages";
 import ChatInput from "@/components/ChatInput";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2 } from "lucide-react";
 
 export default function ChatContainer() {
-  const { state, sendMessage, stopMessage, createNewConversation } = useChat();
+  const { state, sendMessage, createNewConversation } = useChat();
   const pathname = usePathname();
 
   // Update URL when conversation ID is available without navigation
@@ -39,10 +39,6 @@ export default function ChatContainer() {
     } catch (error) {
       console.error("Failed to send message:", error);
     }
-  };
-
-  const handleStopMessage = () => {
-    stopMessage();
   };
 
   const suggestions = [
@@ -113,7 +109,6 @@ export default function ChatContainer() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <ChatInput
             onSend={handleSendMessage}
-            onStop={handleStopMessage}
             isLoading={state.isLoading}
             isStreaming={state.isStreaming}
             placeholder="Ask anything..."
