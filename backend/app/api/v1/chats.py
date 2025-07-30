@@ -2,7 +2,7 @@ import json
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import Any, List, AsyncGenerator
 from app.api.deps import get_db, get_current_user
 from app.core.llm_service import llm_service
@@ -47,34 +47,39 @@ async def add_message(
 ) -> Any:
     chat = (
         db.query(Chat)
+        .options(joinedload(Chat.messages))
         .filter(Chat.id == chat_id, Chat.user_id == current_user.id)
         .first()
     )
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
-    
+
     # Only allow user messages to trigger LLM
     if message_in.role != "user":
         raise HTTPException(status_code=400, detail="Only user messages are accepted.")
-    
+
     # Save user message
     user_message = Message(chat_id=chat_id, role="user", content=message_in.content)
     db.add(user_message)
     db.commit()
     db.refresh(user_message)
-    
+
+    # Build context list of last 5 messages (including new user message)
+    all_messages = (
+        db.query(Message)
+        .filter(Message.chat_id == chat_id)
+        .order_by(Message.created_at)
+        .all()
+    )
+    context = [{"role": msg.role, "content": msg.content} for msg in all_messages[-5:]]
+
     async def stream_response() -> AsyncGenerator[str, None]:
         try:
-            # Get last 5 messages as context
-            chat_messages = chat.messages
-            context = [
-                {"role": msg.role, "content": msg.content} 
-                for msg in chat_messages
-            ]
-            
             # Stream assistant reply with context
             assistant_content = ""
-            async for chunk in llm_service.generate_response_stream(message_in.content, context):
+            async for chunk in llm_service.generate_response_stream(
+                message_in.content, context
+            ):
                 assistant_content += chunk
                 response_chunk = {
                     "type": "token",
@@ -82,7 +87,7 @@ async def add_message(
                     "id": f"streaming-{user_message.id}",
                 }
                 yield json.dumps(response_chunk) + "\n"
-            
+
             # Save the complete assistant message
             assistant_message = Message(
                 chat_id=chat_id, role="assistant", content=assistant_content
@@ -90,14 +95,14 @@ async def add_message(
             db.add(assistant_message)
             db.commit()
             db.refresh(assistant_message)
-            
+
             # Send completion signal
             completion_chunk = {
                 "type": "complete",
                 "id": assistant_message.id,
             }
             yield json.dumps(completion_chunk) + "\n"
-            
+
         except Exception as e:
             logger.error(f"Error generating response: {str(e)}")
             error_chunk = {
@@ -106,7 +111,7 @@ async def add_message(
                 "id": f"error-{user_message.id}",
             }
             yield json.dumps(error_chunk) + "\n"
-    
+
     return StreamingResponse(
         stream_response(),
         media_type="application/json",
@@ -156,7 +161,7 @@ async def delete_chat(
     )
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
-    
+
     # Delete all messages first to maintain referential integrity
     db.query(Message).filter(Message.chat_id == chat_id).delete()
     db.delete(chat)
