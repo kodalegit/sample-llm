@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback, useLayoutEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useChat } from "@/contexts/chat-context";
 import ReactMarkdown, { Components } from "react-markdown";
@@ -116,23 +116,91 @@ function PulsingLoader() {
   );
 }
 
-export default function ChatMessages() {
-  const { state } = useChat();
+// Simplified scroll hook for chat
+function useChatScroll(messages: any[], isStreaming: boolean) {
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to bottom when new messages arrive or when streaming
-  useEffect(() => {
+  const lastMessageIdRef = useRef<string | null>(null);
+  const isAtBottomRef = useRef(true);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  
+  // Check if scrolled to bottom
+  const checkIfAtBottom = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return true;
+    
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const threshold = 50;
+    return scrollTop + clientHeight >= scrollHeight - threshold;
+  }, []);
+  
+  // Scroll to bottom
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
     if (bottomRef.current) {
-      // Use instant scroll for better performance during streaming
-      bottomRef.current.scrollIntoView({ behavior: state.isStreaming ? "instant" : "smooth" });
+      bottomRef.current.scrollIntoView({ behavior });
+      isAtBottomRef.current = true;
+      setShowScrollButton(false);
     }
-  }, [state.messages, state.isStreaming]);
+  }, []);
+  
+  // Handle scroll events
+  const handleScroll = useCallback(() => {
+    const atBottom = checkIfAtBottom();
+    isAtBottomRef.current = atBottom;
+    setShowScrollButton(!atBottom);
+  }, [checkIfAtBottom]);
+  
+  // Set up scroll listener
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll, { passive: true });
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
+  
+  // Scroll when messages change
+  useLayoutEffect(() => {
+    if (messages.length === 0) return;
+    
+    const lastMessage = messages[messages.length - 1];
+    
+    // Initial load - scroll to bottom
+    if (lastMessageIdRef.current === null) {
+      lastMessageIdRef.current = lastMessage.id;
+      scrollToBottom('instant');
+      return;
+    }
+    
+    const isNewMessage = lastMessage.id !== lastMessageIdRef.current;
+    if (isNewMessage) {
+      lastMessageIdRef.current = lastMessage.id;
+      
+      // For new messages, scroll to bottom if user was already at bottom
+      if (isAtBottomRef.current) {
+        scrollToBottom('smooth');
+      }
+    }
+  }, [messages, scrollToBottom]);
+
+  // Auto-scroll during streaming only if at bottom
+  useLayoutEffect(() => {
+    if (isStreaming && isAtBottomRef.current && bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'instant' });
+    }
+  }, [messages, isStreaming]);
+  
+  return { containerRef, bottomRef, showScrollButton, scrollToBottom };
+}
+
+export default function ChatMessages() {
+  const { state } = useChat();
+  const { containerRef, bottomRef, showScrollButton, scrollToBottom } = useChatScroll(state.messages, state.isStreaming);
 
   const showPulsingLoader = state.isLoading && !state.isStreaming;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0 relative">
       <div 
         ref={containerRef} 
         className="flex-1 overflow-y-auto px-6 sm:px-12 lg:px-16 pt-8"
@@ -142,13 +210,22 @@ export default function ChatMessages() {
             <ChatMessage key={message.id} message={message} />
           ))}
           
-          {/* Show the pulsing loader when needed */}
           {showPulsingLoader && <PulsingLoader />}
-          
-          {/* Scroll anchor */}
           <div ref={bottomRef} />
         </div>
       </div>
+
+      {showScrollButton && (
+        <button
+          onClick={() => scrollToBottom()}
+          className="fixed bottom-28 right-8 bg-slate-700 hover:bg-slate-600 text-white rounded-full p-3 shadow-lg transition-all z-10"
+          aria-label="Scroll to bottom"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

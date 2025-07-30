@@ -10,7 +10,6 @@ import { Sparkles, Loader2 } from "lucide-react";
 
 export default function ChatContainer() {
   const { state, sendMessage, stopMessage, createNewConversation } = useChat();
-  const router = useRouter();
   const pathname = usePathname();
 
   // Update URL when conversation ID is available without navigation

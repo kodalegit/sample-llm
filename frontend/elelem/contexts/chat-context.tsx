@@ -34,7 +34,8 @@ type ChatAction =
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_CONVERSATION"; payload: { id: string; name?: string } }
   | { type: "SET_STREAMING"; payload: boolean }
-  | { type: "RESET_CHAT" };
+  | { type: "RESET_CHAT" }
+  | { type: "REPLACE_MESSAGE_ID"; payload: { oldId: string; newId: string } };
 
 const ChatContext = createContext<{
   state: ChatState;
@@ -92,6 +93,15 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
     case "SET_STREAMING":
       return { ...state, isStreaming: action.payload };
 
+    case "REPLACE_MESSAGE_ID":
+      // Change the message ID while preserving order and content
+      return {
+        ...state,
+        messages: state.messages.map((m) =>
+          m.id === action.payload.oldId ? { ...m, id: action.payload.newId } : m
+        ),
+      };
+
     case "RESET_CHAT":
       return { ...initialState };
 
@@ -133,6 +143,7 @@ export function ChatProvider({
   }, [error, router]);
 
   useEffect(() => {
+    dispatch({ type: "SET_LOADING", payload: isLoadingConversation });
     if (conversationData && !isLoadingConversation) {
       const formattedMessages = conversationData.messages.map(
         (msg: { id: string; role: "user" | "assistant" | "system"; content: string; created_at?: string; createdAt?: string; }) => ({
@@ -162,9 +173,20 @@ export function ChatProvider({
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
 
+      // Remove internal duplicates (same role + content) while preserving order
+      const dedupedMessages: Message[] = [];
+      const seenKeysInner = new Set<string>();
+      for (const msg of mergedMessages) {
+        const key = `${msg.role}|${msg.content}`;
+        if (!seenKeysInner.has(key)) {
+          dedupedMessages.push(msg);
+          seenKeysInner.add(key);
+        }
+      }
+
       // Update messages if they've changed
-      if (JSON.stringify(mergedMessages) !== JSON.stringify(state.messages)) {
-        dispatch({ type: "SET_MESSAGES", payload: mergedMessages });
+      if (JSON.stringify(dedupedMessages) !== JSON.stringify(state.messages)) {
+        dispatch({ type: "SET_MESSAGES", payload: dedupedMessages });
       }
     }
   }, [conversationData, isLoadingConversation]);
@@ -180,7 +202,7 @@ export function ChatProvider({
       dispatch: React.Dispatch<ChatAction>,
       userMessageId: string
     ) => {
-      const assistantMessageId = `streaming-${userMessageId}`;
+      const assistantMessageId = chunk.id ? chunk.id : `streaming-${userMessageId}`;
 
       if (chunk.type === "token") {
         // We received a new token – append it to the buffer
@@ -189,17 +211,18 @@ export function ChatProvider({
 
         // Create assistant message if it doesn't exist yet
         if (buffer[assistantMessageId] === undefined) {
-          buffer[assistantMessageId] = "";
+          buffer[assistantMessageId] = chunk.content || "";
           const assistantMessage: Message = {
             id: assistantMessageId,
             role: "assistant",
-            content: "",
+            content: buffer[assistantMessageId],
             createdAt: new Date().toISOString(),
           };
           dispatch({ type: "ADD_MESSAGE", payload: assistantMessage });
+        } else {
+          // Append subsequent tokens
+          buffer[assistantMessageId] += chunk.content || "";
         }
-
-        buffer[assistantMessageId] += chunk.content || "";
 
         dispatch({
           type: "UPDATE_MESSAGE",
@@ -213,22 +236,12 @@ export function ChatProvider({
         dispatch({ type: "SET_STREAMING", payload: false });
         dispatch({ type: "SET_LOADING", payload: false });
 
-        // Create assistant message if it doesn't exist yet (e.g., error response with no tokens)
-        if (buffer[assistantMessageId] === undefined) {
-          const assistantMessage: Message = {
-            id: assistantMessageId,
-            role: "assistant",
-            content: "",
-            createdAt: new Date().toISOString(),
-          };
-          dispatch({ type: "ADD_MESSAGE", payload: assistantMessage });
-        }
-
         const finalContent =
           chunk.content !== undefined && chunk.content !== null
             ? chunk.content
             : buffer[assistantMessageId] || "";
 
+        // Update assistant message content
         dispatch({
           type: "UPDATE_MESSAGE",
           payload: {
@@ -236,6 +249,14 @@ export function ChatProvider({
             content: finalContent,
           },
         });
+
+        // Replace the temporary streaming ID with the real message ID from the server
+        if (chunk.id && chunk.id !== assistantMessageId) {
+          dispatch({
+            type: "REPLACE_MESSAGE_ID",
+            payload: { oldId: assistantMessageId, newId: chunk.id },
+          });
+        }
 
         // Clean up
         delete buffer[assistantMessageId];
