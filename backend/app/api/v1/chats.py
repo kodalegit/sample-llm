@@ -20,7 +20,7 @@ async def create_chat(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Any:
-    # Generate title from initial query using LLM
+    # Generate title from initial query using LLM (no context for title generation)
     title = await llm_service.generate_response(chat_in.initial_query, title_mode=True)
     chat = Chat(user_id=current_user.id, name=title)
     db.add(chat)
@@ -65,9 +65,16 @@ async def add_message(
     
     async def stream_response() -> AsyncGenerator[str, None]:
         try:
-            # Stream assistant reply
+            # Get last 5 messages as context
+            chat_messages = chat.messages
+            context = [
+                {"role": msg.role, "content": msg.content} 
+                for msg in chat_messages
+            ]
+            
+            # Stream assistant reply with context
             assistant_content = ""
-            async for chunk in llm_service.generate_response_stream(message_in.content):
+            async for chunk in llm_service.generate_response_stream(message_in.content, context):
                 assistant_content += chunk
                 response_chunk = {
                     "type": "token",

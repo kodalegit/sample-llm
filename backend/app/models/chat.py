@@ -13,7 +13,7 @@ class Chat(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     messages = relationship(
-        "Message", back_populates="chat", cascade="all, delete-orphan"
+        "Message", back_populates="chat", cascade="all, delete-orphan", order_by="Message.created_at"
     )
 
 
