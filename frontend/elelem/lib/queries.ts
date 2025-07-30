@@ -16,7 +16,7 @@ import { useAuth } from "./authContext";
 
 // Cache time constants in milliseconds
 const CACHE_TIME = {
-  CHATS: 30 * 60 * 1000, // 30 minutes
+  CHATS: 5 * 60 * 1000, // 5 minutes
   CHAT: 5 * 60 * 1000, // 5 minutes for individual chat
   MESSAGES: 5 * 60 * 1000, // 5 minutes for messages
 } as const;
@@ -30,13 +30,17 @@ export function useChats() {
     queryFn: async () => {
       if (!token) throw new Error("No auth token");
       const data = await getChats(token);
-      return data.map((chat: any) => ({
-        id: chat.id,
-        title: chat.name || "Untitled Chat",
-        time: new Date(chat.created_at).toLocaleDateString(),
-        created_at: chat.created_at,
-        updated_at: chat.updated_at,
-      }));
+      return data
+        .map((chat: any) => ({
+          id: chat.id,
+          title: chat.name || "Untitled Chat",
+          time: new Date(chat.updated_at).toLocaleDateString(),
+          created_at: chat.created_at,
+          updated_at: chat.updated_at,
+        }))
+        .sort((a: {updated_at: string}, b: {updated_at: string}) => 
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        );
     },
     enabled: !!token,
     refetchOnWindowFocus: false,

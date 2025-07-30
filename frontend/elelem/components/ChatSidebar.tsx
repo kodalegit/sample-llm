@@ -116,7 +116,6 @@ export default function ChatSidebar() {
                     >
                       <div className="flex items-center justify-between w-48">
                         <span className="text-white truncate text-sm">{chat.title}</span>
-                        <span className="text-xs text-slate-400 ml-2">{chat.time}</span>
                       </div>
                     </Link>
                     <button

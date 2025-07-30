@@ -114,7 +114,7 @@ async def list_chats(
     chats = (
         db.query(Chat)
         .filter(Chat.user_id == current_user.id)
-        .order_by(Chat.created_at.desc())
+        .order_by(Chat.updated_at.desc())
         .all()
     )
     return chats
