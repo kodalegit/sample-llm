@@ -69,11 +69,11 @@ export default function ChatContainer() {
                 <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                Hi, I'm Elelem - Your AI Explainer
+                Hi, I&apos;m Elelem - Your AI Explainer
               </h1>
               <p className="text-slate-400 text-base sm:text-lg max-w-sm sm:max-w-md mx-auto px-2">
                 I specialize in breaking down complex topics into simple, layered explanations. 
-                Ask me anything and I'll explain it for different knowledge levels.
+                Ask me anything and I&apos;ll explain it for different knowledge levels.
               </p>
             </div>
 

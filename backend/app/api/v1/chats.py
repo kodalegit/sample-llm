@@ -7,7 +7,7 @@ from typing import Any, List, AsyncGenerator
 from app.api.deps import get_db, get_current_user
 from app.core.llm_service import llm_service
 from app.models.chat import Chat, Message
-from app.schemas.chat import ChatCreate, ChatRead, MessageCreate, MessageRead
+from app.schemas.chat import ChatCreate, ChatRead, MessageCreate
 from app.models.user import User
 
 router = APIRouter()

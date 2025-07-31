@@ -12,8 +12,8 @@ interface ChatMessageProps {
   
   export function ChatMessage({ message }: ChatMessageProps) {
     const components: Components = {
-      a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="underline text-blue-400 hover:text-blue-300" />,
-      code: ({node, className, children, ...props}) => {
+      a: ({...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="underline text-blue-400 hover:text-blue-300" />,
+      code: ({className, children, ...props}) => {
         // Check if it's an inline code element
         const isInline = !className;
         if (isInline) {
@@ -32,15 +32,15 @@ interface ChatMessageProps {
           </pre>
         );
       },
-      ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4" {...props} />,
-      ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4" {...props} />,
-      li: ({node, ...props}) => <li className="mb-1" {...props} />,
-      blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-slate-400 pl-4 italic my-4" {...props} />,
-      hr: ({node, ...props}) => <hr className="my-6 border-slate-400" {...props} />,
-      p: ({node, ...props}) => <p className={message.role === "user" ? "mb-0" : "mb-4"} {...props} />,
-      h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4 mt-6" {...props} />,
-      h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-3 mt-5" {...props} />,
-      h3: ({node, ...props}) => <h3 className="text-lg font-bold mb-3 mt-4" {...props} />,
+      ul: ({...props}) => <ul className="list-disc pl-6 mb-4" {...props} />,
+      ol: ({...props}) => <ol className="list-decimal pl-6 mb-4" {...props} />,
+      li: ({...props}) => <li className="mb-1" {...props} />,
+      blockquote: ({...props}) => <blockquote className="border-l-4 border-slate-400 pl-4 italic my-4" {...props} />,
+      hr: ({...props}) => <hr className="my-6 border-slate-400" {...props} />,
+      p: ({...props}) => <p className={message.role === "user" ? "mb-0" : "mb-4"} {...props} />,
+      h1: ({...props}) => <h1 className="text-2xl font-bold mb-4 mt-6" {...props} />,
+      h2: ({...props}) => <h2 className="text-xl font-bold mb-3 mt-5" {...props} />,
+      h3: ({...props}) => <h3 className="text-lg font-bold mb-3 mt-4" {...props} />,
     };
   
     // Assistant messages
