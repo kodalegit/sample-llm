@@ -56,7 +56,7 @@ export function useChats() {
 }
 
 // Individual chat hook
-export function useChat(chatId: string | undefined) {
+export function useConversation(chatId: string | undefined) {
   const { token } = useAuth();
   
   return useQuery({

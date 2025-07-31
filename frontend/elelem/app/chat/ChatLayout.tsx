@@ -4,8 +4,8 @@ import { useEffect, useState, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/authContext";
 import { ChatProvider } from "@/contexts/chat-context";
-import ChatSidebar from "@/components/ChatSidebar";
-import ChatContainer from "@/components/ChatContainer";
+import ChatSidebar from "@/components/chat/ChatSidebar";
+import ChatContainer from "@/components/chat/ChatContainer";
 import { Button } from "@/components/ui/button";
 import { Loader2, Menu, X } from "lucide-react";
 

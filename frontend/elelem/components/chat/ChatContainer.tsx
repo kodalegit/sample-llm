@@ -3,14 +3,18 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useChat } from "@/contexts/chat-context";
-import ChatMessages from "@/components/ChatMessages";
-import ChatInput from "@/components/ChatInput";
+import ChatMessages from "@/components/chat/ChatMessages";
+import ChatInput from "@/components/chat/ChatInput";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import { useConversation } from "@/lib/queries";
 
 export default function ChatContainer() {
   const { state, sendMessage, createNewConversation } = useChat();
   const pathname = usePathname();
+  const { isLoading: isLoadingConversation } = useConversation(
+    state.conversationId ?? undefined
+  );
 
   // Update URL when conversation ID is available without navigation
   useEffect(() => {
@@ -49,14 +53,14 @@ export default function ChatContainer() {
     "Create a business plan",
     "Help with data analysis"
   ];
-
+  
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className="flex-1 min-h-0 overflow-y-auto relative">
-        {/* Welcome content - only shown when no messages and not loading */}
-        {state.messages.length === 0 && !state.isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-            {/* Background decoration */}
+        {(state.messages.length > 0 || isLoadingConversation) ? (
+          <ChatMessages />
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 pb-24">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
             <div className="absolute top-1/4 left-1/4 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-1/4 right-1/4 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
@@ -73,7 +77,6 @@ export default function ChatContainer() {
               </p>
             </div>
 
-            {/* Quick suggestions */}
             <div className="w-full max-w-3xl relative z-10 px-2">
               <div className="flex flex-wrap gap-2 justify-center">
                 {suggestions.map((suggestion, index) => (
@@ -91,20 +94,8 @@ export default function ChatContainer() {
             </div>
           </div>
         )}
-        
-        {/* Chat messages - shown when there are messages or when loading */}
-        {(state.messages.length > 0 || state.isLoading) && <ChatMessages />}
-        
-        {/* Loading overlay when switching conversations */}
-        {state.isLoading && state.messages.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
-            <div className="flex flex-col items-center">
-              <Loader2 className="h-8 w-8 animate-spin text-white" />
-              <span className="mt-2 text-white">Loading conversation...</span>
-            </div>
-          </div>
-        )}
       </div>
+
       <div className="w-full sticky bottom-0 z-10 bg-slate-900/20 backdrop-blur-xl border-t border-slate-700/50">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
           <ChatInput

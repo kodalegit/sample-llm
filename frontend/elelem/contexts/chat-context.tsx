@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/authContext";
-import { useChat as useChatQuery, useCreateChat, useSendMessageStream as useSendMessageStreamQuery } from "@/lib/queries";
+import { useConversation as useChatQuery, useCreateChat, useSendMessageStream as useSendMessageStreamQuery } from "@/lib/queries";
 
 export interface Message {
   id: string;
@@ -142,7 +142,6 @@ export function ChatProvider({
   }, [error, router]);
 
   useEffect(() => {
-    dispatch({ type: "SET_LOADING", payload: isLoadingConversation });
     if (conversationData && !isLoadingConversation) {
       const formattedMessages = conversationData.messages.map(
         (msg: { id: string; role: "user" | "assistant" | "system"; content: string; created_at?: string; createdAt?: string; }) => ({
