@@ -1,103 +1,107 @@
-# Travel Document Query Application
+# Elelem - AI Explainer Application
 
-A full-stack application that uses LLMs to provide accurate information about travel document requirements for international travelers.
+![Elelem Logo](frontend/elelem/public/elelem-logo.svg)
 
-## Project Structure
-
-```
-├── backend/           # FastAPI backend
-│   ├── app/           # Application code
-│   │   ├── api/       # API endpoints
-│   │   ├── core/      # Core functionality
-│   │   ├── models/    # Database models
-│   │   ├── schemas/   # Pydantic schemas
-│   │   └── utils/     # Utility functions
-│   ├── alembic/       # Database migrations
-│   └── Dockerfile     # Backend container definition
-└── docker-compose.yml # Docker compose configuration
-```
+Elelem is a responsive web application that helps users understand complex topics through layered explanations from an AI assistant.
 
 ## Features
 
-- User authentication with JWT tokens
-- LLM-powered travel document requirement queries
-- Support for multiple LLM providers (OpenAI, DeepSeek, Gemini, Claude)
-- Structured response formatting for travel documents
-- Query history tracking
-- PostgreSQL database for data persistence
+- **Responsive Chat Interface**: Works on all device sizes
+- **Layered Explanations**: Get explanations at different knowledge levels
+- **Conversation History**: View and continue past conversations
+- **Real-time Streaming**: See responses as they're generated
+- **Modern UI**: Clean, intuitive interface with TailwindCSS
 
 ## Tech Stack
 
-- **Backend**: FastAPI, SQLAlchemy, Pydantic, Alembic
-- **Database**: PostgreSQL
-- **Authentication**: JWT tokens with OAuth2
-- **LLM Integration**: OpenAI, DeepSeek, Gemini, Claude
-- **Containerization**: Docker, Docker Compose
+**Frontend**:
 
-## Setup and Installation
+- Next.js 15
+- TypeScript
+- TailwindCSS
+- React Context API
+
+**Backend**:
+
+- FastAPI
+- Google Gemini LLM (via LangChain)
+- JWT Authentication
+
+## Setup Instructions
 
 ### Prerequisites
 
-- Docker and Docker Compose
-- LLM API key (OpenAI, DeepSeek, Gemini, or Claude)
+- Node.js 18+
+- Python 3.10+
+- Google Gemini API Key
 
-### Environment Configuration
+### Frontend Setup
 
-1. Copy the example environment file and update with your settings:
+1. Clone the repository
+2. Install dependencies:
 
 ```bash
-cp backend/.env.example backend/.env
+cd frontend
+npm install
 ```
 
-2. Update the `.env` file with your database credentials and LLM API key.
+3. Create `.env.local` file:
 
-### Running with Docker Compose
-
-```bash
-# Start all services
-docker-compose up -d
-
-# Run database migrations
-docker-compose exec backend alembic upgrade head
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-The API will be available at http://localhost:8000
-
-## API Documentation
-
-Once the application is running, you can access the API documentation at:
-
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-## Development
-
-### Running Locally
+4. Run development server:
 
 ```bash
-# Navigate to backend directory
+npm run dev
+```
+
+### Backend Setup
+
+1. Install dependencies:
+
+```bash
 cd backend
-
-# Create and activate virtual environment
-python -m venv env
-source env/bin/activate  # On Windows: .\env\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
+```
 
-# Run the application
+2. Create `.env` file:
+
+```
+LLM_API_KEY=your-gemini-api-key
+LLM_MODEL=gemini-model
+SECRET_KEY=your-secret-key
+```
+
+3. Run FastAPI server:
+
+```bash
 uvicorn app.main:app --reload
 ```
 
-### Database Migrations
+## Deployment
 
-```bash
-# Generate a new migration
-alembic revision --autogenerate -m "description"
+**Frontend**: Deploy to Vercel
 
-# Apply migrations
-alembic upgrade head
-```
+1. Connect your GitHub repository
+2. Set environment variables
+3. Deploy!
+
+**Backend**: Deploy to Railway
+
+1. Connect your repository
+2. Set environment variables
+3. Deploy Python service
+
+## Prompt Documentation
+
+The AI uses carefully engineered prompts to generate explanations:
+
+1. **Title Generation**: Creates concise conversation titles
+2. **Core Explanation**: Provides layered explanations at different knowledge levels
+
+See [PROMPTS.md](PROMPTS.md) for detailed prompt documentation.
 
 ## License
 
