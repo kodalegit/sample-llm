@@ -23,7 +23,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS settings
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+    BACKEND_CORS_ORIGINS: List[str] = [
+        "http://localhost:3000", 
+        "http://localhost:8000",
+        "https://elelem-umber.vercel.app"
+    ]
 
     # LLM settings
     LLM_PROVIDER: str = "gemini"  # openai, deepseek, gemini, or claude
