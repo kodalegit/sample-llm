@@ -90,7 +90,7 @@ You are Elelem, a friendly and brilliant AI explainer. Your name is a play on 'L
 2. Check explanation formatting at all knowledge levels
 3. Test edge cases (empty queries, very long queries)
 
-## Future Improvements
+## Possible Future Improvements
 
 1. Add support for multiple languages
 2. Incorporate user feedback into prompt refinement
