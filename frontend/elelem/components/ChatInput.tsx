@@ -50,23 +50,23 @@ export default function ChatInput({
 
   return (
     <form onSubmit={handleSubmit} className={`w-full ${className}`}>
-      <div className="relative w-full flex flex-col bg-muted/90 border border-border rounded-2xl overflow-hidden">
+      <div className="relative w-full flex flex-col bg-slate-800/50 border border-border rounded-2xl overflow-hidden">
         <Textarea
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full min-h-[60px] placeholder:text-sm placeholder:md:text-md max-h-[200px] bg-transparent border-none resize-none pr-4 py-4 pl-4 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none text-foreground placeholder:text-muted-foreground"
+          className="w-full min-h-[60px] placeholder:text-sm placeholder:md:text-md max-h-[200px] bg-transparent border-none resize-none pr-4 py-4 pl-4 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none text-white placeholder:text-muted-foreground"
           disabled={isLoading}
           rows={1}
           aria-label="Chat message input"
         />
-        <div className="flex items-center justify-end px-3 py-2 bg-muted/20">
+        <div className="flex items-center justify-end px-3 py-2 bg-slate-800/20">
           <Button
             type="submit"
             size="icon"
-            className="h-8 w-8 rounded-full bg-foreground text-background"
+            className="h-8 w-8 rounded-full bg-slate-600 text-white"
             aria-label="Send message"
             disabled={isLoading || !input.trim()}
           >

@@ -50,14 +50,16 @@ function ChatMessage({ message }: ChatMessageProps) {
   // Assistant messages
   if (message.role === "assistant") {
     return (
-      <div className="mb-6 max-w-4xl mx-auto w-full">
-        <div className="prose dark:prose-invert max-w-none text-slate-200">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={components}
-          >
-            {message.content}
-          </ReactMarkdown>
+      <div className="mb-4 sm:mb-6 max-w-4xl mx-auto w-full">
+        <div className="bg-slate-800/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-700/30">
+          <div className="prose dark:prose-invert max-w-none text-slate-200 prose-sm sm:prose-base">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={components}
+            >
+              {message.content}
+            </ReactMarkdown>
+          </div>
         </div>
       </div>
     );
@@ -66,9 +68,9 @@ function ChatMessage({ message }: ChatMessageProps) {
   // User messages
   if (message.role === "user") {
     return (
-      <div className="flex justify-end mb-6 max-w-4xl mx-auto w-full">
-        <div className="bg-blue-600 text-white rounded-3xl px-4 py-3 text-base whitespace-pre-wrap max-w-2xl">
-          <span className="prose dark:prose-invert max-w-none">
+      <div className="flex justify-end mb-4 sm:mb-6 max-w-4xl mx-auto w-full">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl sm:rounded-3xl px-4 sm:px-5 py-3 sm:py-4 text-sm sm:text-base whitespace-pre-wrap max-w-xs sm:max-w-md lg:max-w-2xl shadow-lg">
+          <span className="prose dark:prose-invert max-w-none prose-sm sm:prose-base">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={components}
@@ -83,9 +85,9 @@ function ChatMessage({ message }: ChatMessageProps) {
 
   // System messages
   return (
-    <div className="flex justify-start mb-6 max-w-4xl mx-auto w-full">
-      <div className="bg-red-600/20 text-red-300 border border-red-500/30 rounded-xl px-4 py-3 text-base whitespace-pre-wrap max-w-2xl">
-        <span className="prose dark:prose-invert max-w-none">
+    <div className="flex justify-start mb-4 sm:mb-6 max-w-4xl mx-auto w-full">
+      <div className="bg-red-600/20 text-red-300 border border-red-500/30 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base whitespace-pre-wrap max-w-xs sm:max-w-md lg:max-w-2xl">
+        <span className="prose dark:prose-invert max-w-none prose-sm sm:prose-base">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={components}
@@ -100,13 +102,16 @@ function ChatMessage({ message }: ChatMessageProps) {
 
 function PulsingLoader() {
   return (
-    <div className="mb-6 max-w-4xl mx-auto w-full">
-      <div className="prose dark:prose-invert max-w-none text-slate-200">
-        <div className="flex items-center space-x-2">
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></div>
-            <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+    <div className="mb-4 sm:mb-6 max-w-4xl mx-auto w-full">
+      <div className="bg-slate-800/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-700/30">
+        <div className="prose dark:prose-invert max-w-none text-slate-200">
+          <div className="flex items-center space-x-2">
+            <div className="flex space-x-1">
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+            <span className="text-slate-400 text-sm">AI is thinking...</span>
           </div>
         </div>
       </div>
@@ -124,7 +129,7 @@ export default function ChatMessages() {
     <div className="flex-1 flex flex-col min-h-0 relative">
       <div 
         ref={containerRef} 
-        className="flex-1 overflow-y-auto px-6 sm:px-8 lg:px-12 pt-8"
+        className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 pt-4 sm:pt-6 lg:pt-8"
       >
         <div className="max-w-4xl mx-auto w-full">
           {state.messages.map((message) => (
@@ -132,14 +137,14 @@ export default function ChatMessages() {
           ))}
           
           {showPulsingLoader && <PulsingLoader />}
-          <div ref={bottomRef} />
+          <div ref={bottomRef} className="h-4" />
         </div>
       </div>
 
       {showScrollButton && (
         <button
           onClick={() => scrollToBottom()}
-          className="fixed bottom-28 right-8 bg-slate-700 hover:bg-slate-600 text-white rounded-full p-3 shadow-lg transition-all z-10"
+          className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 lg:right-8 bg-slate-700/90 hover:bg-slate-600 text-white rounded-full p-2.5 sm:p-3 shadow-lg backdrop-blur-sm transition-all z-10 border border-slate-600/50"
           aria-label="Scroll to bottom"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

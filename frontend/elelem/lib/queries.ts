@@ -35,10 +35,10 @@ export function useChats() {
           id: chat.id,
           title: chat.name || "Untitled Chat",
           time: new Date(chat.updated_at).toLocaleDateString(),
-          created_at: chat.created_at,
-          updated_at: chat.updated_at,
+          created_at: new Date(chat.created_at).toISOString(),
+          updated_at: new Date(chat.updated_at).toISOString(),
         }))
-        .sort((a: {updated_at: string}, b: {updated_at: string}) => 
+        .sort((a: { updated_at: string }, b: { updated_at: string }) => 
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
         );
     },
@@ -107,8 +107,8 @@ export function useCreateChat() {
           id: newChat.id,
           title: newChat.name || "New Chat",
           time: new Date().toLocaleDateString(),
-          created_at: newChat.created_at,
-          updated_at: newChat.updated_at,
+          created_at: new Date(newChat.created_at).toISOString(),
+          updated_at: new Date(newChat.updated_at).toISOString(),
         },
         ...oldChats,
       ]);

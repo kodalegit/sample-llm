@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Loader2, MessageSquarePlus, Trash2 } from "lucide-react";
+import { Sparkles, Loader2, MessageSquarePlus, Trash2, X } from "lucide-react";
 import { useChats, useCreateChat, usePrefetchChat, useDeleteChat } from "@/lib/queries";
 import { useAuth } from "@/lib/authContext";
 import { useChat } from "@/contexts/chat-context";
@@ -19,7 +19,11 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 
-export default function ChatSidebar() {
+interface ChatSidebarProps {
+  onClose?: () => void;
+}
+
+export default function ChatSidebar({ onClose }: ChatSidebarProps) {
   const { isLoading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -35,14 +39,12 @@ export default function ChatSidebar() {
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
 
   const handleNewChat = () => {
-    // Reset the chat state to show the welcome screen
     dispatch({ type: "RESET_CHAT" });
-    // Navigate to the main chat page
     router.push(`/chat`);
+    onClose?.(); // Close sidebar on mobile after navigation
   };
 
   const handleChatHover = (chatId: string) => {
-    // Prefetch chat data on hover for snappy navigation
     prefetchChat(chatId);
   };
 
@@ -53,7 +55,6 @@ export default function ChatSidebar() {
 
   const handleConfirmDelete = () => {
     if (chatToDelete) {
-      // Immediately reset state if deleting active chat
       if (chatToDelete === activeChatId) {
         dispatch({ type: "RESET_CHAT" });
         window.history.replaceState({}, '', '/chat');
@@ -75,47 +76,67 @@ export default function ChatSidebar() {
 
   return (
     <>
-      <div className="w-72 bg-slate-900 flex flex-col">
-        <div className="p-4 flex items-center justify-between border-b border-slate-700">
+      <div className="bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 flex flex-col h-full">
+        <div className="p-3 sm:p-4 flex items-center justify-between border-b border-slate-700/50">
           <div className="flex items-center space-x-2">
-            <Sparkles className="h-5 w-5 text-white" />
-            <span className="font-semibold text-white">AI Assistant</span>
+            <Sparkles className="h-5 w-5 text-blue-400" />
+            <span className="font-semibold text-white text-sm sm:text-base">Elelem</span>
           </div>
-          <Button 
-            variant="ghost" 
-            onClick={handleNewChat}
-            disabled={createChatMutation.isPending}
-            className="text-white hover:bg-slate-300 cursor-pointer"
-          >
-            {createChatMutation.isPending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <MessageSquarePlus className="h-5 w-5" />
+          <div className="flex items-center space-x-1">
+            <Button 
+              variant="ghost" 
+              onClick={handleNewChat}
+              disabled={createChatMutation.isPending}
+              size="sm"
+              className="text-white hover:bg-slate-700/50 p-2"
+            >
+              {createChatMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <MessageSquarePlus className="h-4 w-4" />
+              )}
+            </Button>
+            {onClose && (
+              <Button 
+                variant="ghost" 
+                onClick={onClose}
+                size="sm"
+                className="lg:hidden text-white hover:bg-slate-700/50 p-2"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             )}
-          </Button>
+          </div>
         </div>
         <ScrollArea className="flex-1 p-2">
           {chatsLoading ? (
             <div className="flex items-center justify-center p-4">
-              <Loader2 className="h-5 w-5 animate-spin text-white" />
-              <span className="ml-2 text-white">Loading chats...</span>
+              <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+              <span className="ml-2 text-white text-sm">Loading chats...</span>
             </div>
           ) : error ? (
-            <div className="p-4 text-red-400">Failed to load chats</div>
+            <div className="p-4 text-red-400 text-sm">Failed to load chats</div>
           ) : (
             <ul className="space-y-1">
               {chats.map((chat: { id: string; title: string; time: string }) => (
                 <li key={chat.id} className="group relative">
                   <div 
-                    className={`flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 transition-colors ${chat.id === activeChatId ? "bg-slate-800" : ""}`}
+                    className={`flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all duration-200 ${
+                      chat.id === activeChatId 
+                        ? "bg-slate-800/70 border border-slate-600/50" 
+                        : "border border-transparent"
+                    }`}
                   >
                     <Link 
                       href={`/chat/${chat.id}`}
                       className="flex-1 truncate"
                       onMouseEnter={() => handleChatHover(chat.id)}
+                      onClick={onClose} // Close sidebar on mobile after navigation
                     >
-                      <div className="flex items-center justify-between w-48">
-                        <span className="text-white truncate text-sm">{chat.title}</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-white truncate text-sm font-medium">
+                          {chat.title}
+                        </span>
                       </div>
                     </Link>
                     <button
@@ -124,7 +145,7 @@ export default function ChatSidebar() {
                         e.stopPropagation();
                         handleDeleteClick(chat.id);
                       }}
-                      className="p-1.5 text-slate-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      className="p-1.5 text-slate-400 hover:text-red-400 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-all duration-200 cursor-pointer rounded-lg hover:bg-slate-700/50"
                       disabled={deleteChat.isPending}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -133,8 +154,9 @@ export default function ChatSidebar() {
                 </li>
               ))}
               {chats.length === 0 && (
-                <div className="p-4 text-center text-slate-400 text-sm">
-                  No chats yet. Create your first chat!
+                <div className="p-6 text-center text-slate-400 text-sm">
+                  <div className="mb-2">No chats yet</div>
+                  <div className="text-xs text-slate-500">Create your first chat to get started!</div>
                 </div>
               )}
             </ul>

@@ -55,26 +55,26 @@ export default function ChatContainer() {
       <div className="flex-1 min-h-0 overflow-y-auto relative">
         {/* Welcome content - only shown when no messages and not loading */}
         {state.messages.length === 0 && !state.isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
             {/* Background decoration */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/4 left-1/4 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
 
-            <div className="relative z-10 text-center mb-12 max-w-2xl">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-6 shadow-2xl">
-                <Sparkles className="h-8 w-8 text-white" />
+            <div className="relative z-10 text-center mb-8 sm:mb-12 max-w-2xl">
+              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-4 sm:mb-6 shadow-2xl">
+                <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
                 What's on the agenda today?
               </h1>
-              <p className="text-slate-400 text-lg max-w-md mx-auto">
+              <p className="text-slate-400 text-base sm:text-lg max-w-sm sm:max-w-md mx-auto px-2">
                 Start a conversation and let AI help you explore ideas, solve problems, or learn something new.
               </p>
             </div>
 
             {/* Quick suggestions */}
-            <div className="w-full max-w-3xl relative z-10">
+            <div className="w-full max-w-3xl relative z-10 px-2">
               <div className="flex flex-wrap gap-2 justify-center">
                 {suggestions.map((suggestion, index) => (
                   <Button
@@ -82,7 +82,7 @@ export default function ChatContainer() {
                     variant="ghost"
                     onClick={() => handleSendMessage(suggestion)}
                     disabled={state.isLoading}
-                    className="text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-600/30 hover:border-slate-500/50 rounded-full px-4 py-2 text-sm transition-all duration-200 disabled:opacity-50"
+                    className="text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-600/30 hover:border-slate-500/50 rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm transition-all duration-200 disabled:opacity-50"
                   >
                     {suggestion}
                   </Button>
@@ -105,8 +105,8 @@ export default function ChatContainer() {
           </div>
         )}
       </div>
-      <div className="w-full sticky bottom-0 z-10 bg-transparent/20 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="w-full sticky bottom-0 z-10 bg-slate-900/20 backdrop-blur-xl border-t border-slate-700/50">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
           <ChatInput
             onSend={handleSendMessage}
             isLoading={state.isLoading}
