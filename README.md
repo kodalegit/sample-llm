@@ -2,6 +2,10 @@
 
 ![Elelem Logo](frontend/elelem/public/elelem-logo.svg)
 
+## 🚀 Live Demo
+
+Try the live version of Elelem at: [https://elelem-umber.vercel.app/auth](https://elelem-umber.vercel.app/auth)
+
 Elelem is a responsive web application that helps users understand complex topics through layered explanations from an AI assistant.
 
 ## Features
