@@ -84,16 +84,19 @@ export default function ChatSidebar({ onClose }: ChatSidebarProps) {
           </div>
           <div className="flex items-center space-x-1">
             <Button 
-              variant="ghost" 
+              variant="default"
               onClick={handleNewChat}
               disabled={createChatMutation.isPending}
-              size="sm"
-              className="text-white hover:bg-slate-700/50 p-2"
+              size="default"
+              className="hover:bg-slate-700/50 px-3 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
             >
               {createChatMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <MessageSquarePlus className="h-4 w-4" />
+                <>
+                  <MessageSquarePlus className="h-4 w-4" />
+                  <span className="text-sm hidden sm:inline">New chat</span>
+                </>
               )}
             </Button>
             {onClose && (

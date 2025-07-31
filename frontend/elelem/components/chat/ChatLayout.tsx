@@ -110,7 +110,7 @@ export default function ChatLayout({ children, initialConversationId }: ChatLayo
               onClick={handleLogout}
               variant="outline"
               size="sm"
-              className="px-3 py-1.5 text-sm cursor-pointer"
+              className="text-red-400 border-red-400/50 hover:text-red-300 hover:bg-transparent/25 cursor-pointer bg-transparent px-2.5 py-1.5 text-sm rounded-md transition-colors duration-200"
             >
               Logout
             </Button>
