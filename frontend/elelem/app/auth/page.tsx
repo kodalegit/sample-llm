@@ -66,9 +66,17 @@ export default function AuthPage() {
     }
   };
 
-  const handleTestUser = () => {
+  const handleTestUser = async () => {
     setValue("email", "test@example.com");
-    setValue("password", "testpassword");
+    setValue("password", "password123");
+    
+    // Trigger form submission after a brief delay to allow form state to update
+    setTimeout(() => {
+      const form = document.querySelector('form');
+      if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    }, 100);
   };
 
   return (
@@ -120,7 +128,7 @@ export default function AuthPage() {
         </form>
         <div className="flex justify-between items-center mt-4">
           <button
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm cursor-pointer text-blue-600 hover:underline"
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
             disabled={loading}
           >
@@ -129,7 +137,7 @@ export default function AuthPage() {
               : "Already have an account? Sign In"}
           </button>
           <button
-            className="text-xs text-slate-500 hover:underline ml-2"
+            className="text-sm cursor-pointer text-green-600 hover:text-green-600/80 hover:underline ml-2"
             type="button"
             onClick={handleTestUser}
             disabled={loading}
