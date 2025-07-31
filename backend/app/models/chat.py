@@ -11,9 +11,17 @@ class Chat(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     name = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        onupdate=func.now(),
+        server_default=func.now(),
+        server_onupdate=func.now(),
+    )
     messages = relationship(
-        "Message", back_populates="chat", cascade="all, delete-orphan", order_by="Message.created_at"
+        "Message",
+        back_populates="chat",
+        cascade="all, delete-orphan",
+        order_by="Message.created_at",
     )
 
 
