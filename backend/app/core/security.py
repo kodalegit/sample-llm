@@ -7,7 +7,7 @@ from passlib.context import CryptContext
 from app.config import settings
 
 # Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__ident="2b")
 
 # JWT token settings
 SECRET_KEY = settings.SECRET_KEY
