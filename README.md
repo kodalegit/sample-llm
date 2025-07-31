@@ -45,7 +45,7 @@ Elelem is a responsive web application that helps users understand complex topic
 2. Install dependencies:
 
 ```bash
-cd frontend
+cd frontend/elelem
 npm install
 ```
 
@@ -83,20 +83,6 @@ SECRET_KEY=your-secret-key
 ```bash
 uvicorn app.main:app --reload
 ```
-
-## Deployment
-
-**Frontend**: Deploy to Vercel
-
-1. Connect your GitHub repository
-2. Set environment variables
-3. Deploy!
-
-**Backend**: Deploy to Railway
-
-1. Connect your repository
-2. Set environment variables
-3. Deploy Python service
 
 ## Prompt Documentation
 
