@@ -46,12 +46,11 @@ export default function ChatContainer() {
   };
 
   const suggestions = [
-    "Explain quantum computing",
-    "Write a Python function",
-    "Plan a weekend trip",
-    "Debug my code",
-    "Create a business plan",
-    "Help with data analysis"
+    "Explain quantum computing simply",
+    "How does photosynthesis work?",
+    "Break down blockchain technology",
+    "What is the theory of relativity?",
+    "Describe how neural networks learn"
   ];
   
   return (
@@ -70,10 +69,11 @@ export default function ChatContainer() {
                 <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                What's on the agenda today?
+                Hi, I'm Elelem - Your AI Explainer
               </h1>
               <p className="text-slate-400 text-base sm:text-lg max-w-sm sm:max-w-md mx-auto px-2">
-                Start a conversation and let AI help you explore ideas, solve problems, or learn something new.
+                I specialize in breaking down complex topics into simple, layered explanations. 
+                Ask me anything and I'll explain it for different knowledge levels.
               </p>
             </div>
 

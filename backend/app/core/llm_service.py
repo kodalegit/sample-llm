@@ -1,4 +1,5 @@
 import logging
+from app.core.prompts import TITLE_GENERATION_PROMPT, CORE_SYSTEM_PROMPT
 from typing import AsyncGenerator
 from app.config import settings
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -22,31 +23,42 @@ class LLMService:
             logger.error(f"Error initializing LangChain Gemini: {str(e)}")
             self.client = None
 
-    async def generate_response(self, query: str, title_mode: bool = False, context: list = None) -> str:
+    async def generate_response(
+        self, query: str, title_mode: bool = False, context: list = None
+    ) -> str:
         if not self.client:
             return "LLM service is not properly configured. Please check server logs."
         try:
             if title_mode:
-                system_prompt = "Generate a short, descriptive title (max 7 words) for the following user query. Return only the title, no punctuation or quotes."
+                # Generate a concise title based on the first user message
                 prompt = ChatPromptTemplate.from_messages(
-                    [("system", system_prompt), ("human", "{input}")]
+                    [("system", TITLE_GENERATION_PROMPT), ("human", "{input}")]
                 )
-            else:
-                system_prompt = "You are a helpful travel document assistant. When asked about travel requirements, provide a well-structured response with the following sections: 1. Required visa documentation, 2. Passport requirements, 3. Additional necessary documents, 4. Relevant travel advisories. Be concise, accurate, and helpful."
-                
-                # Build the prompt with context if provided
-                if context and len(context) > 0:
-                    # Take last 5 messages
-                    recent_context = context[-5:] if len(context) > 5 else context
-                    messages = [("system", system_prompt)]
-                    for msg in recent_context:
-                        messages.append((msg["role"], msg["content"]))
-                    messages.append(("human", "{input}"))
-                    prompt = ChatPromptTemplate.from_messages(messages)
-                else:
-                    prompt = ChatPromptTemplate.from_messages(
-                        [("system", system_prompt), ("human", "{input}")]
+                chain = prompt | self.client
+                result = await chain.ainvoke({"input": query})
+                # Extract first line as title and strip whitespace
+                title = result.content.strip().split("\n")[0].strip()
+                # Handle long titles by truncating with ellipses
+                if not title:
+                    return "Untitled Chat"
+                words = title.split()
+                if len(words) > 7:
+                    title = " ".join(words[:7]) + "..."
+                return title
+            # Regular conversation response
+            formatted_system_prompt = CORE_SYSTEM_PROMPT.format(
+                chat_history=(
+                    "\n".join(
+                        f"{msg['role']}: {msg['content']}"
+                        for msg in (context[-5:] if context else [])
                     )
+                    if context
+                    else "No previous messages"
+                )
+            )
+            prompt = ChatPromptTemplate.from_messages(
+                [("system", formatted_system_prompt), ("human", "{input}")]
+            )
             chain = prompt | self.client
             result = await chain.ainvoke({"input": query})
             return result.content
@@ -54,28 +66,30 @@ class LLMService:
             logger.error(f"Error generating Gemini response: {str(e)}")
             return f"Error generating response: {str(e)}"
 
-    async def generate_response_stream(self, query: str, context: list = None) -> AsyncGenerator[str, None]:
+    async def generate_response_stream(
+        self, query: str, context: list = None
+    ) -> AsyncGenerator[str, None]:
         """Stream response tokens from the LLM"""
         if not self.client:
             yield "LLM service is not properly configured. Please check server logs."
             return
 
         try:
-            system_prompt = "You are a helpful travel document assistant. When asked about travel requirements, provide a well-structured response with the following sections: 1. Required visa documentation, 2. Passport requirements, 3. Additional necessary documents, 4. Relevant travel advisories. Be concise, accurate, and helpful."
-            
-            # Build the prompt with context if provided
-            if context and len(context) > 0:
-                # Take last 5 messages
-                recent_context = context[-5:] if len(context) > 5 else context
-                messages = [("system", system_prompt)]
-                for msg in recent_context:
-                    messages.append((msg["role"], msg["content"]))
-                messages.append(("human", "{input}"))
-                prompt = ChatPromptTemplate.from_messages(messages)
-            else:
-                prompt = ChatPromptTemplate.from_messages(
-                    [("system", system_prompt), ("human", "{input}")]
+            # Format system prompt with chat history if available
+            formatted_system_prompt = CORE_SYSTEM_PROMPT.format(
+                chat_history=(
+                    "\n".join(
+                        f"{msg['role']}: {msg['content']}"
+                        for msg in (context[-5:] if context else [])
+                    )
+                    if context
+                    else "No previous messages"
                 )
+            )
+
+            # Build the prompt
+            messages = [("system", formatted_system_prompt), ("human", "{input}")]
+            prompt = ChatPromptTemplate.from_messages(messages)
             chain = prompt | self.client
 
             # Stream the response
