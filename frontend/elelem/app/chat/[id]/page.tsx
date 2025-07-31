@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import ChatLayout from "../ChatLayout";
+import ChatLayout from "@/components/chat/ChatLayout";
 
 export default function ChatConversationPage() {
   const params = useParams();
